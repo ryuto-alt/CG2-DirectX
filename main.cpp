@@ -3,6 +3,10 @@
 #include<string>
 #include<format>
 
+#include"Transform.h"
+
+#include<Matrix.h>
+#include<Matrix4x4.h>
 #include<d3d12.h>
 #include<dxgi1_6.h>
 #include<cassert>
@@ -140,7 +144,9 @@ IDxcBlob* CompileShader(
 	return shaderBlob;
 }
 
-
+#pragma region Transform変数を作る
+Transformmm transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+#pragma endregion
 //Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -399,16 +405,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 #pragma region ルートパラメータの作成
 
-	// RootParameter作成、複数必要であるのであり、今回は1個置いただけなので宣言の配列
-	D3D12_ROOT_PARAMETER rootParameters[1] = {};
+	// RootParameter作成。PixelShaderのMaterialとVertexShaderのTransform
+	D3D12_ROOT_PARAMETER rootParameters[2] = {};
+	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;    // CBVを使う
+	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
+	rootParameters[0].Descriptor.ShaderRegister = 0;                    // レジスタ番号0を使う
+	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;    // CBVを使う
+	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VertexShaderで使う
+	rootParameters[1].Descriptor.ShaderRegister = 0;                    // レジスタ番号0を使う
+	descriptionRootSignature.pParameters = rootParameters;              // ルートパラメータ配列へのポインタ
+	descriptionRootSignature.NumParameters = _countof(rootParameters);  // 配列の長さ
 
-	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBV(定数バッファビュー)を使う
-	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL; 
-	rootParameters[0].Descriptor.ShaderRegister = 0; 
-	descriptionRootSignature.pParameters = rootParameters;
-	descriptionRootSignature.NumParameters = _countof(rootParameters);
-	
-	
+
+
 #pragma endregion
 
 	//シリアライズしてバイナリにする
@@ -542,8 +551,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	*materialData = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
 #pragma endregion
 
-	
 
+
+#pragma region WVPresourceを作る
+
+
+
+	// WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
+	ID3D12Resource* wvpResource = CreateBufferResource(device, sizeof(Matrix4x4));
+	// データを書き込む
+	Matrix4x4* wvpData = nullptr;
+	// 書き込むためのアドレスを取得
+	wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
+	// 単位行列を書きこんでおく
+	*wvpData = MakeIdentity4x4();
+
+#pragma endregion
 #pragma region VertexBufferViewを作成
 
 
@@ -596,6 +619,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 #pragma endregion
 
+
+
+
 	MSG msg{};
 	//ウィンドウの×ボタンが押されるまでループ
 	while (msg.message != WM_QUIT)
@@ -607,6 +633,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			DispatchMessage(&msg);
 		}
 		else {
+
+			transform.rotate.y += 0.03f;
+			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+			*wvpData = worldMatrix;
+
+
 			// これから書き込むバックバッファのインデックスを取得
 			UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 
@@ -644,6 +676,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+
+			//wvp用のCBufferの場所を設定
+			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
+
 			commandList->DrawInstanced(3, 1, 0, 0);
 #pragma endregion
 
@@ -684,9 +720,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			hr = commandList->Reset(commandAllocater, nullptr);
 			assert(SUCCEEDED(hr));
 		}
+
 	}
 #pragma region 解放処理
-
+	wvpResource->Release();
 	materialResource->Release();
 	vertexResource->Release();
 	graphicsPipelineState->Release();
