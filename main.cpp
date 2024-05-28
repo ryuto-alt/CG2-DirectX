@@ -283,10 +283,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// SRV用のヒープディスクリプタの数は128。SRVはShader内で読み取るものなので、ShaderVisibleはtrue
 	ID3D12DescriptorHeap* srvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
 
-	D3D12_DESCRIPTOR_HEAP_DESC rtvDescriptorHeapDesc{};
-	rtvDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-	rtvDescriptorHeapDesc.NumDescriptors = 2;
-	hr = device->CreateDescriptorHeap(&rtvDescriptorHeapDesc, IID_PPV_ARGS(&rtvDescriptorHeap));
+	
 	assert(SUCCEEDED(hr));
 #pragma endregion
 
@@ -511,7 +508,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		 ImGui_ImplDX12_NewFrame();
 		 ImGui_ImplWin32_NewFrame();
 		 ImGui::NewFrame();
-		 
+		 ImGui::ShowDemoWindow();
+		 ImGui::Render();
 
 
 
@@ -526,8 +524,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			*wvpData = worldViewProjectionMatrix;
 
 			UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
-			ImGui::ShowDemoWindow();
-			ImGui::Render();
+			
 
 			
 			D3D12_RESOURCE_BARRIER barrier{};
@@ -544,7 +541,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			float clearColor[] = { 0.1f, 0.25f, 0.5f, 1.0f };
 			commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 			ID3D12DescriptorHeap* descriptorHeaps[] = { srvDescriptorHeap };
-			commandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+			commandList->SetDescriptorHeaps(1, descriptorHeaps);
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 			
 
@@ -597,7 +594,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region 解放処理
 	
-	
 	srvDescriptorHeap->Release();
 	wvpResource->Release();
 	materialResource->Release();
@@ -637,7 +633,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Log("Hello DirectX!\n");
 	return 0;
 }
-
 
 ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes) {
 	D3D12_HEAP_PROPERTIES heapProperties = {};
