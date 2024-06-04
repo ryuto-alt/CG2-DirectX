@@ -21,14 +21,72 @@
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+
+
+
+#pragma region ImGuiネオン風
+void SetGamingStyle()
+{
+	ImGuiStyle& style = ImGui::GetStyle();
+	ImVec4* colors = style.Colors;
+
+	style.WindowRounding = 5.3f;
+	style.FrameRounding = 2.3f;
+	style.ScrollbarRounding = 0;
+
+	colors[ImGuiCol_Text] = ImVec4(0.73f, 0.73f, 0.73f, 1.00f);
+	colors[ImGuiCol_TextDisabled] = ImVec4(0.28f, 0.28f, 0.28f, 1.00f);
+	colors[ImGuiCol_WindowBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.00f);
+	colors[ImGuiCol_ChildBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.00f);
+	colors[ImGuiCol_PopupBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.00f);
+	colors[ImGuiCol_Border] = ImVec4(0.7f, 0.7f, 0.7f, 0.65f);
+	colors[ImGuiCol_BorderShadow] = ImVec4(0.0f, 0.0f, 0.0f, 0.00f);
+	colors[ImGuiCol_FrameBg] = ImVec4(0.2f, 0.2f, 0.2f, 1.00f);
+	colors[ImGuiCol_FrameBgHovered] = ImVec4(0.3f, 0.3f, 0.3f, 1.00f);
+	colors[ImGuiCol_FrameBgActive] = ImVec4(0.47f, 0.47f, 0.47f, 0.67f);
+	colors[ImGuiCol_TitleBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.00f);
+	colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.1f, 0.1f, 0.1f, 0.51f);
+	colors[ImGuiCol_TitleBgActive] = ImVec4(0.1f, 0.1f, 0.1f, 1.00f);
+	colors[ImGuiCol_MenuBarBg] = ImVec4(0.1f, 0.1f, 0.1f, 0.97f);
+	colors[ImGuiCol_ScrollbarBg] = ImVec4(0.2f, 0.2f, 0.2f, 1.00f);
+	colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.8f, 0.8f, 0.8f, 0.31f);
+	colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.9f, 0.9f, 0.9f, 0.78f);
+	colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.7f, 0.7f, 0.7f, 1.00f);
+	colors[ImGuiCol_CheckMark] = ImVec4(0.71f, 0.78f, 0.69f, 1.00f);
+	colors[ImGuiCol_SliderGrab] = ImVec4(0.4f, 0.4f, 0.4f, 0.76f);
+	colors[ImGuiCol_SliderGrabActive] = ImVec4(0.8f, 0.8f, 0.8f, 0.60f);
+	colors[ImGuiCol_Button] = ImVec4(0.0f, 0.48f, 1.0f, 0.65f);
+	colors[ImGuiCol_ButtonHovered] = ImVec4(0.0f, 0.48f, 1.0f, 1.00f);
+	colors[ImGuiCol_ButtonActive] = ImVec4(0.0f, 0.48f, 1.0f, 1.00f);
+	colors[ImGuiCol_Header] = ImVec4(0.0f, 0.48f, 1.0f, 0.76f);
+	colors[ImGuiCol_HeaderHovered] = ImVec4(0.0f, 0.48f, 1.0f, 0.86f);
+	colors[ImGuiCol_HeaderActive] = ImVec4(0.0f, 0.48f, 1.0f, 1.00f);
+	colors[ImGuiCol_ResizeGrip] = ImVec4(0.0f, 0.48f, 1.0f, 0.65f);
+	colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.0f, 0.48f, 1.0f, 1.00f);
+	colors[ImGuiCol_ResizeGripActive] = ImVec4(0.0f, 0.48f, 1.0f, 1.00f);
+	colors[ImGuiCol_PlotLines] = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
+	colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
+	colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
+	colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
+	colors[ImGuiCol_TextSelectedBg] = ImVec4(0.87f, 0.87f, 0.87f, 0.35f);
+	colors[ImGuiCol_DragDropTarget] = ImVec4(1.00f, 0.60f, 0.00f, 0.90f);
+	colors[ImGuiCol_NavHighlight] = colors[ImGuiCol_HeaderHovered];
+	colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 0.60f, 0.00f, 0.70f);
+	colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.20f, 0.20f, 0.20f, 0.20f);
+	colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.10f, 0.10f, 0.10f, 0.35f);
+}
+
+#pragma endregion
+
+
 // ウィンドウプロシージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
 		return true;
 	}
 	switch (msg) {
-
 		
+
 
 
 	case WM_DESTROY:
@@ -283,7 +341,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// SRV用のヒープディスクリプタの数は128。SRVはShader内で読み取るものなので、ShaderVisibleはtrue
 	ID3D12DescriptorHeap* srvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
 
-	
+
 	assert(SUCCEEDED(hr));
 #pragma endregion
 
@@ -480,6 +538,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region Imgui初期化
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
+	SetGamingStyle();  // ゲーミング風スタイルを適用
 	ImGui::StyleColorsDark();
 	ImGui_ImplWin32_Init(hwnd);
 	ImGui_ImplDX12_Init(device,
@@ -505,12 +564,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 		else {
 
-		 ImGui_ImplDX12_NewFrame();
-		 ImGui_ImplWin32_NewFrame();
-		 ImGui::NewFrame();
-		 ImGui::ShowDemoWindow();
-		 ImGui::Render();
+			ImGui_ImplDX12_NewFrame();
+			ImGui_ImplWin32_NewFrame();
+			ImGui::NewFrame();
+			ImGui::Begin("Color Picker");
+			ImGui::ColorEdit4("Text Color With Flags", &materialData->x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar);
+			ImGui::End();
 
+			// ImGuiウィンドウの作成
+			ImGui::Begin("Transform Controls");
+			ImGui::SliderFloat3("Position", &transform.translate.x, -5.0f, 5.0f);
+			ImGui::SliderFloat3("Rotation", &transform.rotate.x, -180.0f, 180.0f);
+			ImGui::SliderFloat3("Scale", &transform.scale.x, 0.1f, 2.0f);
+			ImGui::End();
+
+			ImGui::Render();
+			
 
 
 			transform.rotate.y += 0.03f;
@@ -524,17 +593,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			*wvpData = worldViewProjectionMatrix;
 
 			UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
-			
 
-			
+
+
 			D3D12_RESOURCE_BARRIER barrier{};
 			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 			barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 			barrier.Transition.pResource = swapChainResources[backBufferIndex];
 			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
 			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-			
-			
+
+
 			commandList->ResourceBarrier(1, &barrier);
 
 			commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
@@ -543,9 +612,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ID3D12DescriptorHeap* descriptorHeaps[] = { srvDescriptorHeap };
 			commandList->SetDescriptorHeaps(1, descriptorHeaps);
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
-			
 
-			
+
+
 			commandList->RSSetViewports(1, &viewport);
 			commandList->RSSetScissorRects(1, &scissorRect);
 			commandList->SetGraphicsRootSignature(rootSignature);
@@ -560,7 +629,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// 実際のcommandListのImGuiの描画コマンドを描画
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
-			
+
 			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 			commandList->ResourceBarrier(1, &barrier);
 
@@ -582,18 +651,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			assert(SUCCEEDED(hr));
 			hr = commandList->Reset(commandAllocater, nullptr);
 			assert(SUCCEEDED(hr));
-			
+
 		}
 	}
 #pragma endregion
 
-	
+
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 
 #pragma region 解放処理
-	
+
 	srvDescriptorHeap->Release();
 	wvpResource->Release();
 	materialResource->Release();
