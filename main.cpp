@@ -647,37 +647,37 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma endregion
 
-//#pragma region 頂点データの更新
-//	// 頂点リソースにデータを書き込む
-//	VertexData* vertexData = nullptr;
-//	// 書き込むためのアドレスを取得
-//	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-//
-//	// 左下
-//	vertexData[0].position = { -0.5f, -0.5f, 0.0f, 1.0f };
-//	vertexData[0].texcoord = { 0.0f, 1.0f };
-//
-//	// 上
-//	vertexData[1].position = { 0.0f, 0.5f, 0.0f, 1.0f };
-//	vertexData[1].texcoord = { 0.5f, 0.0f };
-//
-//	// 右下
-//	vertexData[2].position = { 0.5f, -0.5f, 0.0f, 1.0f };
-//	vertexData[2].texcoord = { 1.0f, 1.0f };
-//
-//#pragma endregion
-
-
-
-
-
-#pragma region Resourceにデータを書き込む
-	Vector4* vertexData = nullptr;
+#pragma region 頂点データの更新
+	// 頂点リソースにデータを書き込む
+	VertexData* vertexData = nullptr;
+	// 書き込むためのアドレスを取得
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	vertexData[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
-	vertexData[1] = { 0.0f, 0.5f, 0.0f, 1.0f };
-	vertexData[2] = { 0.5f, -0.5f, 0.0f, 1.0f };
+
+	// 左下
+	vertexData[0].position = { -0.5f, -0.5f, 0.0f, 1.0f };
+	vertexData[0].texcoord = { 0.0f, 1.0f };
+
+	// 上
+	vertexData[1].position = { 0.0f, 0.5f, 0.0f, 1.0f };
+	vertexData[1].texcoord = { 0.5f, 0.0f };
+
+	// 右下
+	vertexData[2].position = { 0.5f, -0.5f, 0.0f, 1.0f };
+	vertexData[2].texcoord = { 1.0f, 1.0f };
+
 #pragma endregion
+
+
+
+
+
+//#pragma region Resourceにデータを書き込む
+//	Vector4* vertexData = nullptr;
+//	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+//	vertexData[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
+//	vertexData[1] = { 0.0f, 0.5f, 0.0f, 1.0f };
+//	vertexData[2] = { 0.5f, -0.5f, 0.0f, 1.0f };
+//#pragma endregion
 
 #pragma region ViewportとScissor
 	D3D12_VIEWPORT viewport{};
