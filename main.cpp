@@ -1,3 +1,5 @@
+
+#include<DirectXTex/DirectXTex.h>
 #include <Windows.h>
 #include <cstdint>
 #include <string>
@@ -9,6 +11,7 @@
 #include <dxgi1_6.h>
 #include <cassert>
 #include "Vector4.h"
+#include "Vector2.h"
 #include <dxgidebug.h>
 #pragma comment(lib, "dxguid.lib")
 #include <dxcapi.h>
@@ -22,61 +25,11 @@
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 
+struct VertexData {
+	Vector4 position;
+	Vector2 texcoord;
+};
 
-
-#pragma region ImGuiネオン風
-void SetGamingStyle()
-{
-	ImGuiStyle& style = ImGui::GetStyle();
-	ImVec4* colors = style.Colors;
-
-	style.WindowRounding = 5.3f;
-	style.FrameRounding = 2.3f;
-	style.ScrollbarRounding = 0;
-
-	colors[ImGuiCol_Text] = ImVec4(0.73f, 0.73f, 0.73f, 1.00f);
-	colors[ImGuiCol_TextDisabled] = ImVec4(0.28f, 0.28f, 0.28f, 1.00f);
-	colors[ImGuiCol_WindowBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.00f);
-	colors[ImGuiCol_ChildBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.00f);
-	colors[ImGuiCol_PopupBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.00f);
-	colors[ImGuiCol_Border] = ImVec4(0.7f, 0.7f, 0.7f, 0.65f);
-	colors[ImGuiCol_BorderShadow] = ImVec4(0.0f, 0.0f, 0.0f, 0.00f);
-	colors[ImGuiCol_FrameBg] = ImVec4(0.2f, 0.2f, 0.2f, 1.00f);
-	colors[ImGuiCol_FrameBgHovered] = ImVec4(0.3f, 0.3f, 0.3f, 1.00f);
-	colors[ImGuiCol_FrameBgActive] = ImVec4(0.47f, 0.47f, 0.47f, 0.67f);
-	colors[ImGuiCol_TitleBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.00f);
-	colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.1f, 0.1f, 0.1f, 0.51f);
-	colors[ImGuiCol_TitleBgActive] = ImVec4(0.1f, 0.1f, 0.1f, 1.00f);
-	colors[ImGuiCol_MenuBarBg] = ImVec4(0.1f, 0.1f, 0.1f, 0.97f);
-	colors[ImGuiCol_ScrollbarBg] = ImVec4(0.2f, 0.2f, 0.2f, 1.00f);
-	colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.8f, 0.8f, 0.8f, 0.31f);
-	colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.9f, 0.9f, 0.9f, 0.78f);
-	colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.7f, 0.7f, 0.7f, 1.00f);
-	colors[ImGuiCol_CheckMark] = ImVec4(0.71f, 0.78f, 0.69f, 1.00f);
-	colors[ImGuiCol_SliderGrab] = ImVec4(0.4f, 0.4f, 0.4f, 0.76f);
-	colors[ImGuiCol_SliderGrabActive] = ImVec4(0.8f, 0.8f, 0.8f, 0.60f);
-	colors[ImGuiCol_Button] = ImVec4(0.0f, 0.48f, 1.0f, 0.65f);
-	colors[ImGuiCol_ButtonHovered] = ImVec4(0.0f, 0.48f, 1.0f, 1.00f);
-	colors[ImGuiCol_ButtonActive] = ImVec4(0.0f, 0.48f, 1.0f, 1.00f);
-	colors[ImGuiCol_Header] = ImVec4(0.0f, 0.48f, 1.0f, 0.76f);
-	colors[ImGuiCol_HeaderHovered] = ImVec4(0.0f, 0.48f, 1.0f, 0.86f);
-	colors[ImGuiCol_HeaderActive] = ImVec4(0.0f, 0.48f, 1.0f, 1.00f);
-	colors[ImGuiCol_ResizeGrip] = ImVec4(0.0f, 0.48f, 1.0f, 0.65f);
-	colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.0f, 0.48f, 1.0f, 1.00f);
-	colors[ImGuiCol_ResizeGripActive] = ImVec4(0.0f, 0.48f, 1.0f, 1.00f);
-	colors[ImGuiCol_PlotLines] = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
-	colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
-	colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
-	colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
-	colors[ImGuiCol_TextSelectedBg] = ImVec4(0.87f, 0.87f, 0.87f, 0.35f);
-	colors[ImGuiCol_DragDropTarget] = ImVec4(1.00f, 0.60f, 0.00f, 0.90f);
-	colors[ImGuiCol_NavHighlight] = colors[ImGuiCol_HeaderHovered];
-	colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 0.60f, 0.00f, 0.70f);
-	colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.20f, 0.20f, 0.20f, 0.20f);
-	colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.10f, 0.10f, 0.10f, 0.35f);
-}
-
-#pragma endregion
 
 
 // ウィンドウプロシージャ
@@ -205,7 +158,147 @@ ID3D12DescriptorHeap* CreateDescriptorHeap(
 }
 #pragma endregion
 
+
+#pragma region ImGuiネオン風
+void SetGamingStyle()
+{
+	ImGuiStyle& style = ImGui::GetStyle();
+	ImVec4* colors = style.Colors;
+
+	style.WindowRounding = 5.3f;
+	style.FrameRounding = 2.3f;
+	style.ScrollbarRounding = 0;
+
+	colors[ImGuiCol_Text] = ImVec4(0.73f, 0.73f, 0.73f, 1.00f);
+	colors[ImGuiCol_TextDisabled] = ImVec4(0.28f, 0.28f, 0.28f, 1.00f);
+	colors[ImGuiCol_WindowBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.00f);
+	colors[ImGuiCol_ChildBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.00f);
+	colors[ImGuiCol_PopupBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.00f);
+	colors[ImGuiCol_Border] = ImVec4(0.7f, 0.7f, 0.7f, 0.65f);
+	colors[ImGuiCol_BorderShadow] = ImVec4(0.0f, 0.0f, 0.0f, 0.00f);
+	colors[ImGuiCol_FrameBg] = ImVec4(0.2f, 0.2f, 0.2f, 1.00f);
+	colors[ImGuiCol_FrameBgHovered] = ImVec4(0.3f, 0.3f, 0.3f, 1.00f);
+	colors[ImGuiCol_FrameBgActive] = ImVec4(0.47f, 0.47f, 0.47f, 0.67f);
+	colors[ImGuiCol_TitleBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.00f);
+	colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.1f, 0.1f, 0.1f, 0.51f);
+	colors[ImGuiCol_TitleBgActive] = ImVec4(0.1f, 0.1f, 0.1f, 1.00f);
+	colors[ImGuiCol_MenuBarBg] = ImVec4(0.1f, 0.1f, 0.1f, 0.97f);
+	colors[ImGuiCol_ScrollbarBg] = ImVec4(0.2f, 0.2f, 0.2f, 1.00f);
+	colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.8f, 0.8f, 0.8f, 0.31f);
+	colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.9f, 0.9f, 0.9f, 0.78f);
+	colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.7f, 0.7f, 0.7f, 1.00f);
+	colors[ImGuiCol_CheckMark] = ImVec4(0.71f, 0.78f, 0.69f, 1.00f);
+	colors[ImGuiCol_SliderGrab] = ImVec4(0.4f, 0.4f, 0.4f, 0.76f);
+	colors[ImGuiCol_SliderGrabActive] = ImVec4(0.8f, 0.8f, 0.8f, 0.60f);
+	colors[ImGuiCol_Button] = ImVec4(0.0f, 0.48f, 1.0f, 0.65f);
+	colors[ImGuiCol_ButtonHovered] = ImVec4(0.0f, 0.48f, 1.0f, 1.00f);
+	colors[ImGuiCol_ButtonActive] = ImVec4(0.0f, 0.48f, 1.0f, 1.00f);
+	colors[ImGuiCol_Header] = ImVec4(0.0f, 0.48f, 1.0f, 0.76f);
+	colors[ImGuiCol_HeaderHovered] = ImVec4(0.0f, 0.48f, 1.0f, 0.86f);
+	colors[ImGuiCol_HeaderActive] = ImVec4(0.0f, 0.48f, 1.0f, 1.00f);
+	colors[ImGuiCol_ResizeGrip] = ImVec4(0.0f, 0.48f, 1.0f, 0.65f);
+	colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.0f, 0.48f, 1.0f, 1.00f);
+	colors[ImGuiCol_ResizeGripActive] = ImVec4(0.0f, 0.48f, 1.0f, 1.00f);
+	colors[ImGuiCol_PlotLines] = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
+	colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
+	colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
+	colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
+	colors[ImGuiCol_TextSelectedBg] = ImVec4(0.87f, 0.87f, 0.87f, 0.35f);
+	colors[ImGuiCol_DragDropTarget] = ImVec4(1.00f, 0.60f, 0.00f, 0.90f);
+	colors[ImGuiCol_NavHighlight] = colors[ImGuiCol_HeaderHovered];
+	colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 0.60f, 0.00f, 0.70f);
+	colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.20f, 0.20f, 0.20f, 0.20f);
+	colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.10f, 0.10f, 0.10f, 0.35f);
+}
+
+#pragma endregion
+
+#pragma region TextureData読み込む
+
+
+
+DirectX::ScratchImage LoadTexture(const std::string& filePath)
+{
+	// テクスチャファイルを読み込んでプログラムで扱えるようにする
+	DirectX::ScratchImage image{};
+	std::wstring filePathW = ConvertString(filePath);
+	HRESULT hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
+	assert(SUCCEEDED(hr));
+
+	// ミップマップの作成
+	DirectX::ScratchImage mipImages{};
+	hr = DirectX::GenerateMipMaps(image.GetImages(), image.GetImageCount(), image.GetMetadata(), DirectX::TEX_FILTER_SRGB, 0, mipImages);
+	assert(SUCCEEDED(hr));
+
+	// ミップマップ付きのデータを返す
+	return mipImages;
+}
+
+#pragma endregion
+
+#pragma region テクスチャ作る
+ID3D12Resource* CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata)
+{
+	// metadataを基にResourceの設定
+	D3D12_RESOURCE_DESC resourceDesc{};
+	resourceDesc.Width = UINT(metadata.width); // Textureの幅
+	resourceDesc.Height = UINT(metadata.height); // Textureの高さ
+	resourceDesc.MipLevels = UINT16(metadata.mipLevels); // mipmapの数
+	resourceDesc.DepthOrArraySize = UINT16(metadata.arraySize); // 奥行き or 配列Textureの配列数
+	resourceDesc.Format = metadata.format; // TextureのFormat
+	resourceDesc.SampleDesc.Count = 1; // サンプルカウント、固定
+	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION(metadata.dimension); // Textureの次元数。普段使っているのは2次元
+
+	// 利用するHeapの設定。詳細に特殊な運用、02_04exで一般的なケース版がある
+	D3D12_HEAP_PROPERTIES heapProperties{};
+	heapProperties.Type = D3D12_HEAP_TYPE_CUSTOM; // 細かい設定を行う
+	heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK; // WriteBackポリシーでCPUアクセス可能
+	heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0; // プロセッサの近くに配置
+
+	// Resourceの生成
+	ID3D12Resource* resource = nullptr;
+	HRESULT hr = device->CreateCommittedResource(
+		&heapProperties, // Heapの設定
+		D3D12_HEAP_FLAG_NONE, // Heapの特殊な設定。特になし。
+		&resourceDesc, // Resourceの設定
+		D3D12_RESOURCE_STATE_GENERIC_READ, // 初回のResourceState。Textureは基本読みだけ
+		nullptr, // Clear最適値。使わないのでnullptr
+		IID_PPV_ARGS(&resource)); // 作成するResourceポインタへのポインタ
+	assert(SUCCEEDED(hr));
+	return resource;
+}
+#pragma endregion
+
+#pragma region TextureResourceにデータを転送する
+
+void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages)
+{
+	// Meta情報を取得
+	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
+
+	// 全MipMapについて
+	for (size_t mipLevel = 0; mipLevel < metadata.mipLevels; ++mipLevel) {
+		// MipMapレベルを指定して各Imageを取得
+		const DirectX::Image* img = mipImages.GetImage(mipLevel, 0, 0);
+
+		// Textureに転送
+		HRESULT hr = texture->WriteToSubresource(
+			UINT(mipLevel), // 全領域へコピー
+			nullptr, // データアドレス
+			img->pixels, // ピクセルデータ
+			UINT(img->rowPitch), // 行サイズ
+			UINT(img->slicePitch)); // 1枚サイズ
+		assert(SUCCEEDED(hr));
+	}
+}
+
+#pragma endregion
+
+
+
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
+
+	CoInitializeEx(0, COINIT_MULTITHREADED);
 #pragma region Windowの作成
 	WNDCLASS wc{};
 	wc.lpfnWndProc = WindowProc;
@@ -345,6 +438,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	assert(SUCCEEDED(hr));
 #pragma endregion
 
+
+
+
+
+
+
+
 #pragma region SwapChainResource
 	ID3D12Resource* swapChainResources[2] = { nullptr };
 	hr = swapChain->GetBuffer(0, IID_PPV_ARGS(&swapChainResources[0]));
@@ -418,14 +518,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 
 #pragma region inputLayout
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs[1] = {};
+	D3D12_INPUT_ELEMENT_DESC inputElementDescs[2] = {};
 	inputElementDescs[0].SemanticName = "POSITION";
 	inputElementDescs[0].SemanticIndex = 0;
 	inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+	inputElementDescs[1].SemanticName = "TEXCOORD";
+	inputElementDescs[1].SemanticIndex = 0;
+	inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
+	inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
 	inputLayoutDesc.pInputElementDescs = inputElementDescs;
 	inputLayoutDesc.NumElements = _countof(inputElementDescs);
+
 #pragma endregion
 
 #pragma region BlendState
@@ -503,6 +609,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	*wvpData = MakeIdentity4x4();
 #pragma endregion
 
+
+#pragma region Textureを読んで転送する
+	// Textureを読んで転送する
+	DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
+	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
+	ID3D12Resource* textureResource = CreateTextureResource(device, metadata);
+	UploadTextureData(textureResource, mipImages);
+#pragma endregion
+
+
 #pragma region VertexBufferViewを作成
 
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
@@ -510,6 +626,50 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexBufferView.SizeInBytes = sizeof(Vector4) * 3;
 	vertexBufferView.StrideInBytes = sizeof(Vector4);
 #pragma endregion
+
+#pragma region ShaderResourceView
+	// metaDataを基にSRVの設定
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+	srvDesc.Format = metadata.format;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; // 2Dテクスチャ
+	srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
+
+	// SRVを作成するDescriptorHeapの場所を決める
+	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+	// 後ほどImGuiが使うのでその次を使う
+	textureSrvHandleCPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	textureSrvHandleGPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+	// SRVの生成
+	device->CreateShaderResourceView(textureResource, &srvDesc, textureSrvHandleCPU);
+
+#pragma endregion
+
+//#pragma region 頂点データの更新
+//	// 頂点リソースにデータを書き込む
+//	VertexData* vertexData = nullptr;
+//	// 書き込むためのアドレスを取得
+//	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+//
+//	// 左下
+//	vertexData[0].position = { -0.5f, -0.5f, 0.0f, 1.0f };
+//	vertexData[0].texcoord = { 0.0f, 1.0f };
+//
+//	// 上
+//	vertexData[1].position = { 0.0f, 0.5f, 0.0f, 1.0f };
+//	vertexData[1].texcoord = { 0.5f, 0.0f };
+//
+//	// 右下
+//	vertexData[2].position = { 0.5f, -0.5f, 0.0f, 1.0f };
+//	vertexData[2].texcoord = { 1.0f, 1.0f };
+//
+//#pragma endregion
+
+
+
+
 
 #pragma region Resourceにデータを書き込む
 	Vector4* vertexData = nullptr;
@@ -549,6 +709,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
 #pragma endregion
+
+
 
 
 
@@ -662,7 +824,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ImGui::DestroyContext();
 
 #pragma region 解放処理
-
+	
+	textureResource->Release();
 	srvDescriptorHeap->Release();
 	wvpResource->Release();
 	materialResource->Release();
@@ -700,6 +863,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		debug->Release();
 	}
 	Log("Hello DirectX!\n");
+	CoUninitialize();
 	return 0;
 }
 
