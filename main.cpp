@@ -1,39 +1,26 @@
 
-//#include<DirectXTex/DirectXTex.h>
-//#include<DirectXTex/d3dx12.h>
-
+#include<DirectXTex/DirectXTex.h>
 #include <Windows.h>
-
-#include <dxgidebug.h>
-#include <dxcapi.h>
-
-
-#include <dxgi1_6.h>
-#include <d3d12.h>
-
-#include "externals/DirectXTex/DirectXTex.h"
-#include "externals/DirectXTex/d3dx12.h"
-#pragma comment(lib, "dxguid.lib")
-#pragma comment(lib, "dxcompiler.lib")
-#pragma comment(lib, "d3d12.lib")
-#pragma comment(lib, "dxgi.lib")
-
-#include "Transform.h"
-#include "Matrix.h"
-#include "Matrix4x4.h"
-#include "Vector4.h"
-#include "Vector2.h"
-
-#include "externals/imgui/imgui.h"
-#include "externals/imgui_impl_dx12.h"
-#include "externals/imgui_impl_win32.h"
-
-#include <vector>
 #include <cstdint>
 #include <string>
 #include <format>
+#include "Transform.h"
+#include "Matrix.h"
+#include "Matrix4x4.h"
+#include <d3d12.h>
+#include <dxgi1_6.h>
 #include <cassert>
-
+#include "Vector4.h"
+#include "Vector2.h"
+#include <dxgidebug.h>
+#pragma comment(lib, "dxguid.lib")
+#include <dxcapi.h>
+#pragma comment(lib, "dxcompiler.lib")
+#pragma comment(lib, "d3d12.lib")
+#pragma comment(lib, "dxgi.lib")
+#include "externals/imgui/imgui.h"
+#include "externals/imgui_impl_dx12.h"
+#include "externals/imgui_impl_win32.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -92,43 +79,6 @@ std::string ConvertString(const std::wstring& str) {
 void Log(const std::string& message) {
 	OutputDebugStringA(message.c_str());
 }
-
-
-ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes) {
-	D3D12_HEAP_PROPERTIES heapProperties = {};
-	heapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
-	heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-	heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-	heapProperties.CreationNodeMask = 1;
-	heapProperties.VisibleNodeMask = 1;
-
-	D3D12_RESOURCE_DESC resourceDesc = {};
-	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	resourceDesc.Width = sizeInBytes;
-	resourceDesc.Height = 1;
-	resourceDesc.DepthOrArraySize = 1;
-	resourceDesc.MipLevels = 1;
-	resourceDesc.SampleDesc.Count = 1;
-	resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-	resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-
-	ID3D12Resource* bufferResource = nullptr;
-	HRESULT hr = device->CreateCommittedResource(
-		&heapProperties,
-		D3D12_HEAP_FLAG_NONE,
-		&resourceDesc,
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		nullptr,
-		IID_PPV_ARGS(&bufferResource)
-	);
-	if (FAILED(hr)) {
-		Log("Failed to create buffer resource\n");
-		assert(SUCCEEDED(hr));
-	}
-	return bufferResource;
-}
-
-
 
 #pragma region リソース作成の関数化
 
@@ -312,38 +262,13 @@ ID3D12Resource* CreateTextureResource(ID3D12Device* device, const DirectX::TexMe
 		&heapProperties, // Heapの設定
 		D3D12_HEAP_FLAG_NONE, // Heapの特殊な設定。特になし。
 		&resourceDesc, // Resourceの設定
-		D3D12_RESOURCE_STATE_COPY_DEST, // 初回のResourceState。Textureは基本読みだけ
+		D3D12_RESOURCE_STATE_GENERIC_READ, // 初回のResourceState。Textureは基本読みだけ
 		nullptr, // Clear最適値。使わないのでnullptr
 		IID_PPV_ARGS(&resource)); // 作成するResourceポインタへのポインタ
 	assert(SUCCEEDED(hr));
 	return resource;
 }
 #pragma endregion
-
-#pragma region 345まとめて行う
-[[nodiscard]]
-ID3D12Resource* UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages, ID3D12Device* device, ID3D12GraphicsCommandList* commandList)
-{
-
-	std::vector<D3D12_SUBRESOURCE_DATA> subresources;
-	DirectX::PrepareUpload(device, mipImages.GetImages(), mipImages.GetImageCount(), mipImages.GetMetadata(), subresources);
-	uint64_t intermediateSize = GetRequiredIntermediateSize(texture, 0, UINT(subresources.size()));
-	ID3D12Resource* intermediateResource = CreateBufferResource(device, intermediateSize);
-	UpdateSubresources(commandList, texture, intermediateResource, 0, 0, UINT(subresources.size()), subresources.data());
-	// Textureへの転送後に利用できるよう、D3D12_RESOURCE_STATE_COPY_DESTからD3D12_RESOURCE_STATE_GENERIC_READへResourceStateを変更する
-	D3D12_RESOURCE_BARRIER barrier{};
-	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	barrier.Transition.pResource = texture;
-	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
-	commandList->ResourceBarrier(1, &barrier);
-	return intermediateResource;
-}
-
-#pragma endregion
-
 
 #pragma region TextureResourceにデータを転送する
 
@@ -369,8 +294,6 @@ void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mip
 }
 
 #pragma endregion
-
-
 
 
 
@@ -516,12 +439,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	assert(SUCCEEDED(hr));
 #pragma endregion
 
-
-
-
-
-
-#pragma endregion
 
 
 
@@ -702,7 +619,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region VertexResource
 
 	D3D12_HEAP_PROPERTIES uploadHeapProperties{};
-	uploadHeapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
+	uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
 
 	D3D12_RESOURCE_DESC vertexResourceDesc{};
 	vertexResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
@@ -714,19 +631,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 
 	ID3D12Resource* vertexResource = nullptr;
-	hr = device->CreateCommittedResource(
-		&uploadHeapProperties,
-		D3D12_HEAP_FLAG_NONE,
-		&vertexResourceDesc,
-		D3D12_RESOURCE_STATE_COPY_DEST,  // 変更点: D3D12_RESOURCE_STATE_GENERIC_READ から D3D12_RESOURCE_STATE_COPY_DEST に変更
-		nullptr,
-		IID_PPV_ARGS(&vertexResource)
-	);
+	hr = device->CreateCommittedResource(&uploadHeapProperties, D3D12_HEAP_FLAG_NONE, &vertexResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&vertexResource));
 	assert(SUCCEEDED(hr));
 #pragma endregion
-
-
-
 
 #pragma region Material用のリソースを作る
 	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Vector4));
@@ -846,39 +753,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma endregion
 
-#pragma region コマンドを実行して完了を待つ
-
-	ID3D12Resource* intermediateResource = UploadTextureData(textureResource, mipImages, device, commandList);
-
-	// commandListをCloseし、commandQueue->ExecuteCommandListsを使いキックする
-	hr = commandList->Close();
-	assert(SUCCEEDED(hr));
-	ID3D12CommandList* commandLists[] = { commandList };
-	commandQueue->ExecuteCommandLists(1, commandLists);
-
-	// 実行を待つ
-	fenceValue++;
-	commandQueue->Signal(fence, fenceValue);
-	if (fence->GetCompletedValue() < fenceValue) {
-		fence->SetEventOnCompletion(fenceValue, fenceEvent);
-		WaitForSingleObject(fenceEvent, INFINITE);
-	}
-
-	// 実行が完了したので、allocatorとcommandListをResetして次のコマンドを積めるようにする
-	hr = commandAllocater->Reset();
-	assert(SUCCEEDED(hr));
-	hr = commandList->Reset(commandAllocater, nullptr);
-	assert(SUCCEEDED(hr));
-
-	// ここまできたら転送は終わっているので、intermediateResourceはReleaseしても良い
-	intermediateResource->Release();
-
-
-
-
-
-
-#pragma endregion
 
 
 
@@ -996,6 +870,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region 解放処理
 
+	textureResource->Release();
 	srvDescriptorHeap->Release();
 	wvpResource->Release();
 	materialResource->Release();
@@ -1023,7 +898,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #ifdef _DEBUG
 	debugController->Release();
 #endif
-	
 	CloseWindow(hwnd);
 
 	IDXGIDebug1* debug;
@@ -1038,4 +912,36 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	return 0;
 }
 
+ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes) {
+	D3D12_HEAP_PROPERTIES heapProperties = {};
+	heapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
+	heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+	heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+	heapProperties.CreationNodeMask = 1;
+	heapProperties.VisibleNodeMask = 1;
 
+	D3D12_RESOURCE_DESC resourceDesc = {};
+	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+	resourceDesc.Width = sizeInBytes;
+	resourceDesc.Height = 1;
+	resourceDesc.DepthOrArraySize = 1;
+	resourceDesc.MipLevels = 1;
+	resourceDesc.SampleDesc.Count = 1;
+	resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+	resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+	ID3D12Resource* bufferResource = nullptr;
+	HRESULT hr = device->CreateCommittedResource(
+		&heapProperties,
+		D3D12_HEAP_FLAG_NONE,
+		&resourceDesc,
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&bufferResource)
+	);
+	if (FAILED(hr)) {
+		Log("Failed to create buffer resource\n");
+		assert(SUCCEEDED(hr));
+	}
+	return bufferResource;
+}
