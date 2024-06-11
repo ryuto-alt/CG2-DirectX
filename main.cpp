@@ -1,26 +1,39 @@
 
-#include<DirectXTex/DirectXTex.h>
+// #include<DirectXTex/DirectXTex.h>
+//#include<DirectXTex/d3dx12.h>
+
 #include <Windows.h>
-#include <cstdint>
-#include <string>
-#include <format>
-#include "Transform.h"
-#include "Matrix.h"
-#include "Matrix4x4.h"
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <cassert>
-#include "Vector4.h"
-#include "Vector2.h"
+
 #include <dxgidebug.h>
-#pragma comment(lib, "dxguid.lib")
 #include <dxcapi.h>
+
+
+#include <dxgi1_6.h>
+#include <d3d12.h>
+
+#include "externals/DirectXTex/DirectXTex.h"
+#include "externals/DirectXTex/d3dx12.h"
+#pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "dxcompiler.lib")
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
+
+#include "Transform.h"
+#include "Matrix.h"
+#include "Matrix4x4.h"
+#include "Vector4.h"
+#include "Vector2.h"
+
 #include "externals/imgui/imgui.h"
 #include "externals/imgui_impl_dx12.h"
 #include "externals/imgui_impl_win32.h"
+
+#include <vector>
+#include <cstdint>
+#include <string>
+#include <format>
+#include <cassert>
+
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -514,7 +527,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 	rootParameters[1].Descriptor.ShaderRegister = 0;
-
+	
 	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // DescriptorTableを使う
 	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
 	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange; // Tableの中身の配列を指定
@@ -543,7 +556,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 
 
-
+	
 
 
 
@@ -825,11 +838,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
 			// SRVのDescriptorTableの先頭を設定。2はrootParameter[2]である。
-
+			
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 
 
-
+			
 			commandList->DrawInstanced(3, 1, 0, 0);
 
 			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
